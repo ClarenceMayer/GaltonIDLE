@@ -1,0 +1,169 @@
+<style>
+	.autoDiv{
+		margin-bottom: 15px;
+	}
+</style>
+
+<div>
+	<div style="float:left;margin-right: 5%">
+	<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
+	</div>
+	<div>
+		<h4>score : <span id="score">0</span></h4>
+		<div class="autoDiv">Tire une balle toute les 10 secondes<br> <span style="height:50px"><img id="0" class="auto" width="50px" src="coins.png"><span id="prix0"></span></span></div>
+		<div class="autoDiv">Tire une balle toute les 7 secondes<br> <span style="height:50px"><img id="1" class="auto" width="50px" src="coins.png"><span id="prix1"></span></span></div>
+		<div class="autoDiv">Tire une balle toute les 5 secondes<br> <span style="height:50px"><img id="2" class="auto" width="50px" src="coins.png"><span id="prix2"></span></span></div>
+		<div class="autoDiv">Tire une balle toute les 3 secondes<br> <span style="height:50px"><img id="3" class="auto" width="50px" src="coins.png"><span id="prix3"></span></span></div>
+		<div class="autoDiv">Tire une balle par seconde<br> <span style="height:50px"><img id="4" class="auto" width="50px" src="coins.png"><span id="prix4"></span></span></div>
+		<div class="autoDiv">Tire deux balle par seconde<br> <span style="height:50px"><img id="5" class="auto" width="50px" src="coins.png"><span id="prix5"></span></span></div>
+	</div>
+</div>
+
+<script>
+	window.onload=function(){
+		canvas = document.getElementById("canvas");
+		ctx = canvas.getContext("2d");
+		canvas.addEventListener("click",click);
+		autos = document.getElementsByClassName("auto");
+		for(i=0;i<autos.length;i++){
+			autos[i].addEventListener("click",buy);
+			document.getElementById("prix"+i).innerHTML = auto[i][0];
+		}
+		//40 frames par secondes
+		loop = setInterval(loop,1000/40);
+	}
+
+	
+
+	goalHeight = 50;
+	goalValue = [1,4,3,1,5,1,2,3,1,4];
+	nbLigne = 10;
+	nbCol = 10;
+	xinterval = canvas.width/nbCol;
+	yinterval = canvas.height/nbLigne;
+	dotRadius = 15;
+	coinRadius = 7;
+	score = 0;
+	//[prix,intervalle]
+	auto = [[10,10*1000],[16,7*1000],[22,5*1000],[50,3*1000],[166,1000],[500,500]];
+
+	//[x,y,vx,vy,color]
+	coin =new Array();
+	//[x,y]
+	dot = new Array();
+
+	for(i = 0; i < nbLigne-1; i++){
+		if(i%2 == 0){
+			for(j = 0; j<nbCol+1; j++){
+				dot.push([j*xinterval,i*yinterval - 20]);
+			}
+		}else{
+			for(j = 0; j<nbCol; j++){
+				dot.push([j*xinterval + xinterval/2,i*yinterval - 20]);
+			}
+		}
+		
+	}
+
+	function loop(){
+		ctx.fillStyle = "white";
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+
+		for(i=0;i<nbCol+1;i++){
+			if(i%2==0){
+				ctx.fillStyle = "#42adf5";
+			}else{
+				ctx.fillStyle = "#fff673";
+			}
+			ctx.fillRect(i*xinterval,canvas.height-goalHeight,xinterval,goalHeight);	
+			ctx.fillStyle = "black";
+			ctx.font = "15px Arial"
+			ctx.fillText(goalValue[i],i*xinterval+xinterval/2,canvas.height-goalHeight/2)
+			ctx.lineWidth=3;
+			ctx.beginPath()
+			ctx.moveTo(i*xinterval,canvas.height-goalHeight);
+			ctx.lineTo(i*xinterval,canvas.height);
+			ctx.stroke();
+		}
+
+		for(i= 0; i<coin.length; i++){
+			ctx.beginPath();
+			ctx.arc(coin[i][0],coin[i][1],coinRadius,0,2*Math.PI,false);
+			ctx.fillStyle = coin[i][4];
+			ctx.fill();
+
+			for(j = 0; j<dot.length; j++){
+				if(Math.sqrt(Math.pow(coin[i][0]-dot[j][0],2)+Math.pow(coin[i][1]-dot[j][1],2))<dotRadius + coinRadius){
+					coin[i][2] = (coin[i][0]-dot[j][0])/2;
+					coin[i][3] = (coin[i][1]-dot[j][1])/2;
+					if(coin[i][2] == 0){
+						if(Math.random()*100>50){
+							coin[i][2] = 2;
+						}else{
+							coin[i][2] = -2;
+						}
+					}
+				}
+			}
+
+			for(j=0;j<nbCol+1;j++){
+				if(coin[i][1]>canvas.height-goalHeight && Math.abs(coin[i][0]-j*xinterval)<coinRadius){
+					coin[i][2] = -coin[i][2];
+				}
+			}
+			
+			if(coin[i][0] <= 0+coinRadius ){
+				coin[i][2] = Math.abs(-coin[i][2]);
+			}else if(coin[i][0] >= canvas.width-coinRadius){
+				coin[i][2] = -Math.abs(-coin[i][2]);
+			}			
+
+			coin[i][3] += 1.1;
+			
+			coin[i][0] += coin[i][2];
+			coin[i][1] += coin[i][3];
+
+			if(coin[i][1]>canvas.height){
+				tmp = score;
+				score += goalValue[Math.floor(coin[i][0]/xinterval)];
+				if(isNaN(score)){
+					score = tmp;
+				}
+				coin.splice(i,1);
+				i--;
+			}
+			document.getElementById("score").innerHTML = score;
+		}
+
+		for(i = 0; i<dot.length; i++){
+			ctx.beginPath();
+			ctx.arc(dot[i][0],dot[i][1],dotRadius,0,2*Math.PI,false);
+			ctx.fillStyle = "#48494a";
+			ctx.fill();
+		}
+	}
+
+	function buy(event){
+		id = event.target.id;
+		if(auto[id][0]<=score){
+			score -= auto[id][0];
+			auto[id][0] = Math.ceil(auto[id][0]*1.2);
+			setInterval(autoSpawn,auto[id][1])
+			document.getElementById("prix"+id).innerHTML = auto[id][0];
+		}
+	}
+
+	function click(event){
+		newCoin(event.clientX);
+	}
+
+	function autoSpawn(){
+		newCoin(Math.random()*800);
+	}
+
+	function newCoin(x){
+		color = "rgb("+ Math.random()*250 +","+ Math.random()*250 +","+ Math.random()*250 +")";
+		coin.push([x,5,0,0,color]);
+	}
+
+</script>
