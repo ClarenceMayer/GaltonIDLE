@@ -3,7 +3,7 @@
 IDLE Game made in js
  
  ## WIP :
- - click updgrade
+ - click upgrade
  - goal upgrade
  - fun features
  - actives
