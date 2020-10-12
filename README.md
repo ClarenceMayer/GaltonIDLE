@@ -6,5 +6,7 @@ IDLE Game made in js
  - click upgrade
  - fun features
  - actives
- - saves
+ - saves (import and export)
  - prestige
+ - graphics
+ - rework spawn for lateGame lag
