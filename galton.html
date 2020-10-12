@@ -2,11 +2,49 @@
 	.autoDiv{
 		margin-bottom: 15px;
 	}
+	.upGoalDiv{
+		text-align: center;
+		width: 10%;
+		float:left;
+	}
+
 </style>
 
 <div>
 	<div style="float:left;margin-right: 5%">
-	<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
+		<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
+		<div style="padding-top: 5px;">
+			<div class="upGoalDiv">
+				<button id="goalUp0" value="0">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp1" value="1">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp2" value="2">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp3" value="3">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp4" value="4">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp5" value="5">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp6" value="6">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp7" value="7">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp8" value="8">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp9" value="9">+</button>
+			</div>
+		</div>
 	</div>
 	<div>
 		<h4>score : <span id="score">0</span></h4>
@@ -29,6 +67,12 @@
 			autos[i].addEventListener("click",buy);
 			document.getElementById("prix"+i).innerHTML = auto[i][0];
 		}
+		upGoalDiv = document.getElementsByClassName("upGoalDiv");
+		for(i=0;i<upGoalDiv.length;i++){
+			upGoalDiv[i].getElementsByTagName("button")[0].addEventListener("click",upGoal);
+			upGoalDiv[i].getElementsByTagName("button")[0].innerHTML = goalUpPrice[i];
+		}
+
 		//40 frames par secondes
 		loop = setInterval(loop,1000/40);
 	}
@@ -36,7 +80,8 @@
 	
 
 	goalHeight = 50;
-	goalValue = [1,4,3,1,5,1,2,3,1,4];
+	goalValue = [1,1,1,1,1,1,1,1,1,1];
+	goalUpPrice = [50,50,50,50,50,50,50,50,50,50]
 	nbLigne = 10;
 	nbCol = 10;
 	xinterval = canvas.width/nbCol;
@@ -52,7 +97,7 @@
 	//[x,y]
 	dot = new Array();
 
-	for(i = 0; i < nbLigne-1; i++){
+	for(i = 1; i < nbLigne; i++){
 		if(i%2 == 0){
 			for(j = 0; j<nbCol+1; j++){
 				dot.push([j*xinterval,i*yinterval - 20]);
@@ -68,7 +113,7 @@
 	function loop(){
 		ctx.fillStyle = "white";
 		ctx.fillRect(0,0,canvas.width,canvas.height);
-
+		document.getElementById("score").innerHTML = score;
 		for(i=0;i<nbCol+1;i++){
 			if(i%2==0){
 				ctx.fillStyle = "#42adf5";
@@ -132,7 +177,6 @@
 				coin.splice(i,1);
 				i--;
 			}
-			document.getElementById("score").innerHTML = score;
 		}
 
 		for(i = 0; i<dot.length; i++){
@@ -150,6 +194,16 @@
 			auto[id][0] = Math.ceil(auto[id][0]*1.2);
 			setInterval(autoSpawn,auto[id][1])
 			document.getElementById("prix"+id).innerHTML = auto[id][0];
+		}
+	}
+
+	function upGoal(event){
+		id = event.target.value;
+		if(goalUpPrice[id]<=score){
+			score -= goalUpPrice[id];
+			goalValue[id]++;
+			goalUpPrice[id] = Math.ceil(goalUpPrice[id]*1.5);
+			event.target.innerHTML = goalUpPrice[id];
 		}
 	}
 
