@@ -8,3 +8,4 @@ IDLE Game made in js
  - fun features
  - actives
  - saves
+ - prestige
