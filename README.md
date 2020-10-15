@@ -9,3 +9,4 @@ IDLE Game made in js
  - actives
  - prestige
  - graphics
+ - class
