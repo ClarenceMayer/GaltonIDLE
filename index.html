@@ -1,0 +1,363 @@
+<style>
+	.autoDiv{
+		margin-bottom: 15px;
+	}
+	.upGoalDiv{
+		text-align: center;
+		width: 10%;
+		float:left;
+	}
+	.count{
+		margin-left: 5%;
+	}
+
+</style>
+
+<div>
+	<div style="float:left;margin-right: 5%">
+		<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
+		<div style="padding-top: 5px;">
+			<div class="upGoalDiv">
+				<button id="goalUp0" value="0">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp1" value="1">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp2" value="2">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp3" value="3">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp4" value="4">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp5" value="5">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp6" value="6">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp7" value="7">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp8" value="8">+</button>
+			</div>
+			<div class="upGoalDiv">
+				<button id="goalUp9" value="9">+</button>
+			</div>
+		</div>
+	</div>
+	<div>
+		<button id="save">Save</button>
+		<button id="export">Export</button>
+		<button id="import">Import</button>
+		<input id="importInput" placeholder="Copier votre fichier de sauvegarde ici">
+		<h4>score : <span id="score">0</span></h4>
+		<div class="autoDiv">Tire une balle toute les 10 secondes<br> <span style="height:50px"><img id="0" class="auto" width="50px" src="coins.png"><span id="prix0"></span></span><span class="count" id="count0">0</span></div>
+		<div class="autoDiv">Tire une balle toute les 7 secondes<br> <span style="height:50px"><img id="1" class="auto" width="50px" src="coins.png"><span id="prix1"></span></span><span class="count" id="count1">0</span></div>
+		<div class="autoDiv">Tire une balle toute les 5 secondes<br> <span style="height:50px"><img id="2" class="auto" width="50px" src="coins.png"><span id="prix2"></span></span><span class="count" id="count2">0</span></div>
+		<div class="autoDiv">Tire une balle toute les 3 secondes<br> <span style="height:50px"><img id="3" class="auto" width="50px" src="coins.png"><span id="prix3"></span></span><span class="count" id="count3">0</span></div>
+		<div class="autoDiv">Tire une balle par seconde<br> <span style="height:50px"><img id="4" class="auto" width="50px" src="coins.png"><span id="prix4"></span></span><span class="count" id="count4">0</span></div>
+		<div class="autoDiv">Tire deux balle par seconde<br> <span style="height:50px"><img id="5" class="auto" width="50px" src="coins.png"><span id="prix5"></span></span><span class="count" id="count5">0</span></div>
+	</div>
+</div>
+
+<script>
+	window.onload=function(){
+		GaltonSave = getCookie("GaltonSave");
+		loadSave(GaltonSave);
+		canvas = document.getElementById("canvas");
+		ctx = canvas.getContext("2d");
+		canvas.addEventListener("click",click);
+		setEvents();
+		//40 frames par secondes
+		setInterval(loop,1000/40);
+
+		//Save every minute
+		setInterval(save,60*1000);
+	}
+
+	
+
+	goalHeight = 50;
+	nbLigne = 10;
+	nbCol = 10;
+	xinterval = canvas.width/nbCol;
+	yinterval = canvas.height/nbLigne;
+	dotRadius = 15;
+	coinRadius = 7;		
+	
+	//[x,y,vx,vy,color]
+	coin = new Array();
+	//[x,y]
+	dot = new Array();
+
+	for(i = 1; i < nbLigne; i++){
+		if(i%2 == 0){
+			for(j = 0; j<nbCol+1; j++){
+				dot.push([j*xinterval,i*yinterval - 20]);
+			}
+		}else{
+			for(j = 0; j<nbCol; j++){
+				dot.push([j*xinterval + xinterval/2,i*yinterval - 20]);
+			}
+		}
+		
+	}
+
+	function loop(){
+		ctx.fillStyle = "white";
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+		setLabels();
+		for(i=0;i<nbCol+1;i++){
+			if(i%2==0){
+				ctx.fillStyle = "#42adf5";
+			}else{
+				ctx.fillStyle = "#fff673";
+			}
+			ctx.fillRect(i*xinterval,canvas.height-goalHeight,xinterval,goalHeight);	
+			ctx.fillStyle = "black";
+			ctx.font = "15px Arial"
+			ctx.fillText(goalValue[i],i*xinterval+xinterval/2,canvas.height-goalHeight/2)
+			ctx.lineWidth=3;
+			ctx.beginPath()
+			ctx.moveTo(i*xinterval,canvas.height-goalHeight);
+			ctx.lineTo(i*xinterval,canvas.height);
+			ctx.stroke();
+		}
+
+		for(i= 0; i<coin.length; i++){
+			ctx.beginPath();
+			ctx.arc(coin[i][0],coin[i][1],coinRadius,0,2*Math.PI,false);
+			ctx.fillStyle = coin[i][4];
+			ctx.fill();
+
+			for(j = 0; j<dot.length; j++){
+				if(Math.sqrt(Math.pow(coin[i][0]-dot[j][0],2)+Math.pow(coin[i][1]-dot[j][1],2))<dotRadius + coinRadius){
+					coin[i][2] = (coin[i][0]-dot[j][0])/2;
+					coin[i][3] = (coin[i][1]-dot[j][1])/2;
+					if(coin[i][2] == 0){
+						if(Math.random()*100>50){
+							coin[i][2] = 2;
+						}else{
+							coin[i][2] = -2;
+						}
+					}
+				}
+			}
+
+			/*for(j=0;j<nbCol+1;j++){
+				if(coin[i][1]>canvas.height-goalHeight && Math.abs(coin[i][0]-j*xinterval)<coinRadius){
+					coin[i][2] = -coin[i][2];
+				}
+			}*/
+			
+			if(coin[i][0] <= 0+coinRadius ){
+				coin[i][2] = Math.abs(-coin[i][2]);
+			}else if(coin[i][0] >= canvas.width-coinRadius){
+				coin[i][2] = -Math.abs(-coin[i][2]);
+			}			
+
+			coin[i][3] += 1.1;
+			
+			coin[i][0] += coin[i][2];
+			coin[i][1] += coin[i][3];
+
+			if(coin[i][1]>canvas.height){
+				tmp = score;
+				score += goalValue[Math.floor(coin[i][0]/xinterval)];
+				if(isNaN(score)){
+					score = tmp;
+				}
+				coin.splice(i,1);
+				i--;
+			}
+		}
+
+		for(i = 0; i<dot.length; i++){
+			ctx.beginPath();
+			ctx.arc(dot[i][0],dot[i][1],dotRadius,0,2*Math.PI,false);
+			ctx.fillStyle = "#48494a";
+			ctx.fill();
+		}
+	}
+
+	function buy(event){
+		id = event.target.id;
+		if(auto[id][0]<=score){
+			score -= auto[id][0];
+			auto[id][0] = Math.ceil(auto[id][0]*1.2);
+			auto[id][2] ++;
+			//setInterval(autoSpawn,1000/auto[id][1]);
+			if(auto[id][3]){
+				clearInterval(auto[id][3]);
+			}
+			auto[id][3] = true;
+			auto[id][3] = setInterval(autoSpawn,1000/(auto[id][1]*auto[id][2]));
+			document.getElementById("prix"+id).innerHTML = auto[id][0];
+			document.getElementById("count"+id).innerHTML = auto[id][2];
+		}
+	}
+
+	function upGoal(event){
+		id = event.target.value;
+		if(goalUpPrice[id]<=score){
+			score -= goalUpPrice[id];
+			goalValue[id]++;
+			goalUpPrice[id] = Math.ceil(goalUpPrice[id]*1.5);
+			event.target.innerHTML = goalUpPrice[id];
+		}
+	}
+
+	function click(event){
+		newCoin(event.clientX);
+	}
+
+	function autoSpawn(){
+		newCoin(Math.random()*800);
+	}
+
+	function newCoin(x,y=5, vx=0, vy=0){
+		color = "rgb("+ Math.random()*250 +","+ Math.random()*250 +","+ Math.random()*250 +")";
+		coin.push([x,y,vx,vy,color]);
+	}
+
+	function save(){
+		setCookie("GaltonSave",getSaveFile,365);
+	}
+
+	function exportSave(){
+		var element = document.createElement('a');
+	    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(getSaveFile()));
+	    element.setAttribute('download', "GaltonSave.txt");
+	    element.style.display = 'none';
+	    document.body.appendChild(element);
+	    element.click();
+	    document.body.removeChild(element);
+	}
+
+	function importSave(){
+		importedSave = document.getElementById("importInput").value;
+		if(importedSave != ""){
+			loadSave(importedSave);
+		}
+		document.getElementById("importInput").value = "";
+	}
+
+	function getSaveFile(){
+		save = JSON.stringify({score,auto,goalValue,goalUpPrice});
+		save = utf8_to_b64(save);
+		return save;
+	}
+
+	function loadSave(GaltonSave){
+		if(GaltonSave != ""){
+			parsedJSON = JSON.parse( b64_to_utf8(GaltonSave));
+			score = parsedJSON["score"];
+			goalValue = parsedJSON["goalValue"];
+			goalUpPrice = parsedJSON["goalUpPrice"];
+			auto = parsedJSON["auto"];
+			for(i=0;i<auto.length;i++){
+				if(auto[i][2]>0){
+					clearInterval(auto[i][3]);
+					auto[i][3] = true;
+					auto[i][3] = setInterval(autoSpawn,1000/(auto[i][1]*auto[i][2]));
+				}
+			}
+		}else{
+			score = 0;
+			goalValue = [1,1,1,1,1,1,1,1,1,1];
+			goalUpPrice = [50,50,50,50,50,50,50,50,50,50];
+			//[prix,tirPerSec,nombre,IntervalManager]
+			auto = [[10,0.1,0,false],[50,1/7,0,false],[150,0.2,0,false],[400,1/3,0,false],[1500,1,0,false],[5000,2,0,false]];
+		}
+		setLabels();
+	}
+
+	
+
+	function getTirPerSecTotal(){
+		sum = 0;
+		for(i=0;i<auto.length;i++){
+			sum += auto[i][1]*auto[i][2];
+		}
+		return sum;
+	}
+
+
+	function setLabels(){
+		document.getElementById("score").innerHTML = display(score);
+		autos = document.getElementsByClassName("auto");
+		for(i=0;i<autos.length;i++){
+			document.getElementById("prix"+i).innerHTML = display(auto[i][0]);
+			document.getElementById("count"+i).innerHTML = auto[i][2];
+		}
+		upGoalDiv = document.getElementsByClassName("upGoalDiv");
+		for(i=0;i<upGoalDiv.length;i++){
+			upGoalDiv[i].getElementsByTagName("button")[0].innerHTML = display(goalUpPrice[i]);
+		}
+	}
+
+	function display(num){
+		num = num.toString().split('');
+		tmp = new Array();
+		for(j=1;j<=num.length;j++){
+			tmp.push(num[num.length-j]);
+			if(j%3==0){
+				tmp.push(" ");
+			}
+		}
+		tmp.reverse();
+		return tmp.join("");
+	}
+
+	function setEvents(){
+		document.getElementById("save").addEventListener("click",save);
+		document.getElementById("export").addEventListener("click",exportSave);
+		document.getElementById("import").addEventListener("click",importSave);
+		autos = document.getElementsByClassName("auto");
+		for(i=0;i<autos.length;i++){
+			autos[i].addEventListener("click",buy);
+		}
+		upGoalDiv = document.getElementsByClassName("upGoalDiv");
+		for(i=0;i<upGoalDiv.length;i++){
+			upGoalDiv[i].getElementsByTagName("button")[0].addEventListener("click",upGoal);
+		}
+	}
+
+	function setCookie(cname, cvalue, exdays) {
+		var d = new Date();
+		d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+		var expires = "expires="+d.toUTCString();
+		document.cookie = cname + "=" + cvalue + ";" + expires+";";
+	}
+
+	function getCookie(cname) 
+	{
+		var name = cname + "=";
+		var decodedCookie = decodeURIComponent(document.cookie);
+		var ca = decodedCookie.split(';');
+		for(var i = 0; i <ca.length; i++)
+		{
+		    var c = ca[i];
+		    while (c.charAt(0) == ' ') {
+		      c = c.substring(1);
+		    }
+		    if (c.indexOf(name) == 0) {
+		      return c.substring(name.length, c.length);
+			}
+		}
+		return "";
+	}
+
+	function utf8_to_b64( str ) {
+	  return window.btoa(unescape(encodeURIComponent( str )));
+	}
+
+	function b64_to_utf8( str ) {
+	  return decodeURIComponent(escape(window.atob( str )));
+	}
+
+</script>
