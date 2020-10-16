@@ -10,3 +10,4 @@ IDLE Game made in js
  - prestige
  - graphics
  - class
+ - leaderboards
