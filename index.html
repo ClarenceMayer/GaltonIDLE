@@ -236,7 +236,7 @@
 				goalValue[id] += parseInt(tmpBuyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,tmpBuyNb));
 			}else{
-				goalValue[id]+= buyNb;
+				goalValue[id]+= parseInt(buyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,buyNb));
 		
 			}
