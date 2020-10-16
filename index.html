@@ -11,10 +11,18 @@
 		margin-left: 5%;
 	}
 
+	.nbBuyButton{
+		flex:1;
+	}
+
+	.selected{
+		background-color: #bdbcbb;
+	}
+
 </style>
 
 <div>
-	<div style="float:left;margin-right: 5%">
+	<div style="float:left;margin-right: 5%; width: 800px;">
 		<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
 		<div style="padding-top: 5px;">
 			<div class="upGoalDiv">
@@ -49,11 +57,17 @@
 			</div>
 		</div>
 	</div>
-	<div>
+	<div style="padding-top: 10px">
 		<button id="save">Save</button>
 		<button id="export">Export</button>
 		<button id="import">Import</button>
 		<input id="importInput" placeholder="Copier votre fichier de sauvegarde ici">
+		<div style="display: flex">
+			<button class="nbBuyButton selected" value="1" id="buy1">1</button>
+			<button class="nbBuyButton" value="10" id="buy10">10</button>
+			<button class="nbBuyButton" value="100" id="buy100">100</button>
+			<button class="nbBuyButton" value="Max" id="buyMax">Max</button>
+		</div>
 		<h4>score : <span id="score">0</span></h4>
 		<div class="autoDiv">Tire une balle toute les 10 secondes<br> <span style="height:50px"><img id="0" class="auto" width="50px" src="coins.png"><span id="prix0"></span></span><span class="count" id="count0">0</span></div>
 		<div class="autoDiv">Tire une balle toute les 7 secondes<br> <span style="height:50px"><img id="1" class="auto" width="50px" src="coins.png"><span id="prix1"></span></span><span class="count" id="count1">0</span></div>
@@ -64,7 +78,7 @@
 	</div>
 </div>
 
-<footer style="background-color: #afb0b3;position: absolute;bottom:0px; height:25px; width:100%; padding-left: 60%;padding-top: 3px; color:white">
+<footer style="background-color: #afb0b3;position: absolute;bottom:0px; height:25px; width:100%; padding-left: 60%;padding-top: 3px; color:white; z-index: -1">
 	Made by Clarence Mayer / Crunchi
 </footer>
 
@@ -91,7 +105,10 @@
 	xinterval = canvas.width/nbCol;
 	yinterval = canvas.height/nbLigne;
 	dotRadius = 15;
-	coinRadius = 7;		
+	coinRadius = 7;	
+	buyNb = 1;
+	autoScaling = 1.2;
+	goalScaling = 1.5;
 	
 	//[x,y,vx,vy,color]
 	coin = new Array();
@@ -190,11 +207,16 @@
 
 	function buy(event){
 		id = event.target.id;
-		if(auto[id][0]<=score){
-			score -= auto[id][0];
-			auto[id][0] = Math.ceil(auto[id][0]*1.2);
-			auto[id][2] ++;
-			//setInterval(autoSpawn,1000/auto[id][1]);
+		if(getPrix(auto[id][0])<=score){
+			score -= getPrix(auto[id][0])
+			if(buyNb=="Max"){
+				tmpBuyNb = getMaxBuyNB(auto[id][0]);
+				auto[id][2] += parseInt(tmpBuyNb);
+				auto[id][0] = Math.ceil(auto[id][0]*Math.pow(autoScaling,tmpBuyNb));
+			}else{
+				auto[id][0] = Math.ceil(auto[id][0]*Math.pow(autoScaling,buyNb));
+				auto[id][2] += parseInt(buyNb);
+			}
 			if(auto[id][3]){
 				clearInterval(auto[id][3]);
 			}
@@ -207,11 +229,17 @@
 
 	function upGoal(event){
 		id = event.target.value;
-		if(goalUpPrice[id]<=score){
-			score -= goalUpPrice[id];
-			goalValue[id]++;
-			goalUpPrice[id] = Math.ceil(goalUpPrice[id]*1.5);
-			event.target.innerHTML = goalUpPrice[id];
+		if(getPrix(goalUpPrice[id])<=score){
+			score -= getPrix(goalUpPrice[id]);
+			if(buyNb=="Max"){
+				tmpBuyNb = getMaxBuyNB(goalUpPrice[id]);
+				goalValue[id] += parseInt(tmpBuyNb);
+				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,tmpBuyNb));
+			}else{
+				goalValue[id]+= buyNb;
+				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,buyNb));
+		
+			}
 		}
 	}
 
@@ -290,17 +318,49 @@
 		return sum;
 	}
 
+	function getPrix(prixUnit){
+		switch(buyNb){
+			case 1:
+				return prixUnit;
+			break;
+			case "Max":
+				j=1;
+				prix = prixUnit;
+				prevPrix = prix
+				while(prix<=score){
+					j++;
+					prevPrix = prix
+					prix = Math.ceil(prixUnit * ((1-Math.pow(autoScaling,j))/(1-autoScaling)));
+				}
+				return prevPrix;
+			break;
+			default:
+				return Math.ceil(prixUnit * ((1-Math.pow(autoScaling,buyNb))/(1-autoScaling)));
+			break;
+		}
+	}
+
+	function getMaxBuyNB(prixUnit){
+		j=1;
+		prix = prixUnit;
+		prevJ = j;
+		while(prix<=score){
+			j++;
+			prevJ = j;
+			prix = Math.ceil(prixUnit * ((1-Math.pow(autoScaling,j))/(1-autoScaling)));
+		}
+		return prevJ;
+	}
 
 	function setLabels(){
 		document.getElementById("score").innerHTML = display(score);
-		autos = document.getElementsByClassName("auto");
-		for(i=0;i<autos.length;i++){
-			document.getElementById("prix"+i).innerHTML = display(auto[i][0]);
-			document.getElementById("count"+i).innerHTML = auto[i][2];
+		for(i=0;i<auto.length;i++){
+			document.getElementById("prix"+i).innerHTML = display(getPrix(auto[i][0]));
+			document.getElementById("count"+i).innerHTML = display(auto[i][2]);
 		}
 		upGoalDiv = document.getElementsByClassName("upGoalDiv");
 		for(i=0;i<upGoalDiv.length;i++){
-			upGoalDiv[i].getElementsByTagName("button")[0].innerHTML = display(goalUpPrice[i]);
+			upGoalDiv[i].getElementsByTagName("button")[0].innerHTML = display(getPrix(goalUpPrice[i]));
 		}
 	}
 
@@ -321,6 +381,14 @@
 		document.getElementById("save").addEventListener("click",save);
 		document.getElementById("export").addEventListener("click",exportSave);
 		document.getElementById("import").addEventListener("click",importSave);
+		buyNbButtons = document.getElementsByClassName("nbBuyButton");
+		for(i=0;i<buyNbButtons.length;i++){
+			buyNbButtons[i].addEventListener("click",(event)=>{
+				document.getElementById("buy"+buyNb).classList.remove("selected");
+				buyNb = event.target.value;
+				document.getElementById("buy"+buyNb).classList.add("selected");
+			})
+		}
 		autos = document.getElementsByClassName("auto");
 		for(i=0;i<autos.length;i++){
 			autos[i].addEventListener("click",buy);
