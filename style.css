@@ -1,0 +1,71 @@
+	body{
+		background-color: #4158D0;
+		background-image: linear-gradient(315deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+
+	}
+	.autoDiv{
+		margin-bottom: 20px;
+		padding: 2.5%;
+		border: 1px solid black;
+		border-radius: 15%;
+		background-color: white;
+	}
+
+	.upGoalDiv{
+		text-align: center;
+		width: 10%;
+		float:left;
+	}
+	.count{
+		margin-left: 5%;
+	}
+
+	.nbBuyButton{
+		margin-right: 1em;
+	}
+
+	.selected{
+		background-color: #bdbcbb;
+	}
+
+	#container{
+		display: flex;
+	}
+
+	.autoDiv button{
+		width:25%;
+		min-height: 60px;
+	}
+
+	.upButton{
+		border-radius: 1em;
+		width: 80%;
+	}
+
+	.available{
+		background-color: #40e6dd;
+	}
+
+	.disable{
+		background-color: #8fbdba;
+	}
+
+	button span{
+		pointer-events: none;
+	}
+
+	.nombre{
+		display: block
+	}
+
+	.prix{
+		display: block;
+		font-weight: bold;
+		font-size: 1.3em;
+	}
+
+	h5{
+		margin-top: 0%;
+		margin-bottom: 1%;
+		font-size: 1.4em;
+	}
