@@ -128,9 +128,11 @@
 		if(curPrix<=score){
 			if(buyNb=="Max"){
 				tmpBuyNb = getMaxBuyNB(auto[id][0],autoScaling);
+				score -= curPrix;
 				auto[id][2] += parseInt(tmpBuyNb);
 				auto[id][0] = Math.ceil(auto[id][0]*Math.pow(autoScaling,tmpBuyNb));
 			}else{
+				score -= curPrix;
 				auto[id][0] = Math.ceil(auto[id][0]*Math.pow(autoScaling,buyNb));
 				auto[id][2] += parseInt(buyNb);
 			}
@@ -139,8 +141,6 @@
 			}
 			auto[id][3] = true;
 			auto[id][3] = setInterval(autoSpawn,1000/(auto[id][1]*auto[id][2]));
-
-			score -= curPrix;
 		}
 	}
 
@@ -150,13 +150,14 @@
 			
 			if(buyNb=="Max"){
 				tmpBuyNb = getMaxBuyNB(goalUpPrice[id],goalScaling);
+				score -= getPrix(goalUpPrice[id]);
 				goalValue[id] += parseInt(tmpBuyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,tmpBuyNb));
 			}else{
+				score -= getPrix(goalUpPrice[id]);
 				goalValue[id]+= parseInt(buyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,buyNb));
 			}
-			score -= getPrix(goalUpPrice[id]);
 		}
 	}
 
