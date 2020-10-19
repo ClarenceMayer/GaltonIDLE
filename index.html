@@ -19,11 +19,15 @@
 		background-color: #bdbcbb;
 	}
 
+	#container{
+		display: flex;
+	}
+
 </style>
 
-<div>
-	<div style="float:left;margin-right: 5%; width: 800px;">
-		<canvas id="canvas" height="840px" width="800px" style="border:solid black 1px;"></canvas>
+<div id="container">
+	<div id="leftDiv" style="margin-right: 5%;">
+		<canvas id="canvas" height="840" width="800" style="border:solid black 1px;"></canvas>
 		<div style="padding-top: 5px;">
 			<div class="upGoalDiv">
 				<button id="goalUp0" value="0">+</button>
@@ -78,17 +82,15 @@
 	</div>
 </div>
 
-<footer style="background-color: #afb0b3;position: absolute;bottom:0px; height:25px; width:100%; padding-left: 60%;padding-top: 3px; color:white; z-index: -1">
-	Made by Clarence Mayer / Crunchi
-</footer>
-
 <script>
+	window.onresize = setElementSize;
 	window.onload=function(){
 		GaltonSave = getCookie("GaltonSave");
 		loadSave(GaltonSave);
 		canvas = document.getElementById("canvas");
 		ctx = canvas.getContext("2d");
 		canvas.addEventListener("click",click);
+		setElementSize();
 		setEvents();
 		//40 frames par secondes
 		setInterval(loop,1000/40);
@@ -99,13 +101,13 @@
 
 	
 
-	goalHeight = 50;
 	nbLigne = 10;
 	nbCol = 10;
+	goalHeight = 50,"H";
 	xinterval = canvas.width/nbCol;
 	yinterval = canvas.height/nbLigne;
-	dotRadius = 15;
-	coinRadius = 7;	
+	dotRadius = 15,"L";
+	coinRadius = 7,"L";
 	buyNb = 1;
 	autoScaling = 1.2;
 	goalScaling = 1.5;
@@ -138,25 +140,25 @@
 			}else{
 				ctx.fillStyle = "#fff673";
 			}
-			ctx.fillRect(i*xinterval,canvas.height-goalHeight,xinterval,goalHeight);	
+			ctx.fillRect(getResponsiveSizeCanvas(i*xinterval,"L"),canvas.height-getResponsiveSizeCanvas(goalHeight,"H"),getResponsiveSizeCanvas(xinterval,"L"),getResponsiveSizeCanvas(goalHeight,"H"));	
 			ctx.fillStyle = "black";
 			ctx.font = "15px Arial"
-			ctx.fillText(goalValue[i],i*xinterval+xinterval/2,canvas.height-goalHeight/2)
+			ctx.fillText(goalValue[i],getResponsiveSizeCanvas(i*xinterval+xinterval/2,"L"),canvas.height-getResponsiveSizeCanvas(goalHeight,"H")/2)
 			ctx.lineWidth=3;
 			ctx.beginPath()
-			ctx.moveTo(i*xinterval,canvas.height-goalHeight);
-			ctx.lineTo(i*xinterval,canvas.height);
+			ctx.moveTo(getResponsiveSizeCanvas(i*xinterval,"L"),canvas.height-getResponsiveSizeCanvas(goalHeight,"H"));
+			ctx.lineTo(getResponsiveSizeCanvas(i*xinterval,"L"),canvas.height);
 			ctx.stroke();
 		}
 
 		for(i= 0; i<coin.length; i++){
 			ctx.beginPath();
-			ctx.arc(coin[i][0],coin[i][1],coinRadius,0,2*Math.PI,false);
+			ctx.arc(getResponsiveSizeCanvas(coin[i][0],"L"),getResponsiveSizeCanvas(coin[i][1],"H"),getResponsiveSizeCanvas(coinRadius,"L"),0,2*Math.PI,false);
 			ctx.fillStyle = coin[i][4];
 			ctx.fill();
 
 			for(j = 0; j<dot.length; j++){
-				if(Math.sqrt(Math.pow(coin[i][0]-dot[j][0],2)+Math.pow(coin[i][1]-dot[j][1],2))<dotRadius + coinRadius){
+				if(Math.sqrt(Math.pow(getResponsiveSizeCanvas(coin[i][0],"L")-getResponsiveSizeCanvas(dot[j][0],"L"),2)+Math.pow(getResponsiveSizeCanvas(coin[i][1],"H")-getResponsiveSizeCanvas(dot[j][1],"H"),2))<getResponsiveSizeCanvas(dotRadius,"L") + getResponsiveSizeCanvas(coinRadius,"L")){
 					coin[i][2] = (coin[i][0]-dot[j][0])/2;
 					coin[i][3] = (coin[i][1]-dot[j][1])/2;
 					if(coin[i][2] == 0){
@@ -175,9 +177,9 @@
 				}
 			}*/
 			
-			if(coin[i][0] <= 0+coinRadius ){
+			if(getResponsiveSizeCanvas(coin[i][0],"L") <= getResponsiveSizeCanvas(coinRadius,"L") ){
 				coin[i][2] = Math.abs(-coin[i][2]);
-			}else if(coin[i][0] >= canvas.width-coinRadius){
+			}else if(getResponsiveSizeCanvas(coin[i][0],"L") >= canvas.width-getResponsiveSizeCanvas(coinRadius,"L")){
 				coin[i][2] = -Math.abs(-coin[i][2]);
 			}			
 
@@ -186,7 +188,7 @@
 			coin[i][0] += coin[i][2];
 			coin[i][1] += coin[i][3];
 
-			if(coin[i][1]>canvas.height){
+			if(getResponsiveSizeCanvas(coin[i][1],"H")>canvas.height){
 				tmp = score;
 				score += goalValue[Math.floor(coin[i][0]/xinterval)];
 				if(isNaN(score)){
@@ -199,7 +201,7 @@
 
 		for(i = 0; i<dot.length; i++){
 			ctx.beginPath();
-			ctx.arc(dot[i][0],dot[i][1],dotRadius,0,2*Math.PI,false);
+			ctx.arc(getResponsiveSizeCanvas(dot[i][0],"L"),getResponsiveSizeCanvas(dot[i][1],"H"),getResponsiveSizeCanvas(dotRadius,"L"),0,2*Math.PI,false);
 			ctx.fillStyle = "#48494a";
 			ctx.fill();
 		}
@@ -244,7 +246,8 @@
 	}
 
 	function click(event){
-		newCoin(event.clientX);
+		ratio = 800/canvas.width;
+		newCoin(ratio * event.clientX);
 	}
 
 	function autoSpawn(){
@@ -430,6 +433,17 @@
 
 	function b64_to_utf8( str ) {
 	  return decodeURIComponent(escape(window.atob( str )));
+	}
+
+	function setElementSize(){
+		canvas.height = (window.innerHeight*840)/937;
+		canvas.width = canvas.height -40;
+		document.getElementById("leftDiv").style.width = canvas.width;
+	}
+
+	//orientation : H = hauteur / L = largeur
+	function getResponsiveSizeCanvas(taille,orientation){
+		return orientation=="H"?(canvas.height*taille)/840:(canvas.width*taille)/800;
 	}
 
 </script>
