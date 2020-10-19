@@ -124,10 +124,10 @@
 
 	function buy(event){
 		id = event.target.value;
-		if(getPrix(auto[id][0])<=score){
-			score -= getPrix(auto[id][0])
+		curPrix = getPrix(auto[id][0])
+		if(curPrix<=score){
 			if(buyNb=="Max"){
-				tmpBuyNb = getMaxBuyNB(auto[id][0]);
+				tmpBuyNb = getMaxBuyNB(auto[id][0],autoScaling);
 				auto[id][2] += parseInt(tmpBuyNb);
 				auto[id][0] = Math.ceil(auto[id][0]*Math.pow(autoScaling,tmpBuyNb));
 			}else{
@@ -139,22 +139,24 @@
 			}
 			auto[id][3] = true;
 			auto[id][3] = setInterval(autoSpawn,1000/(auto[id][1]*auto[id][2]));
+
+			score -= curPrix;
 		}
 	}
 
 	function upGoal(event){
 		id = event.target.value;
 		if(getPrix(goalUpPrice[id])<=score){
-			score -= getPrix(goalUpPrice[id]);
+			
 			if(buyNb=="Max"){
-				tmpBuyNb = getMaxBuyNB(goalUpPrice[id]);
+				tmpBuyNb = getMaxBuyNB(goalUpPrice[id],goalScaling);
 				goalValue[id] += parseInt(tmpBuyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,tmpBuyNb));
 			}else{
 				goalValue[id]+= parseInt(buyNb);
 				goalUpPrice[id] = Math.ceil(goalUpPrice[id]*Math.pow(goalScaling,buyNb));
-		
 			}
+			score -= getPrix(goalUpPrice[id]);
 		}
 	}
 
@@ -244,8 +246,8 @@
 				prix = prixUnit;
 				prevPrix = prix
 				while(prix<=score){
+					prevPrix = prix;
 					j++;
-					prevPrix = prix
 					prix = Math.ceil(prixUnit * ((1-Math.pow(autoScaling,j))/(1-autoScaling)));
 				}
 				return prevPrix;
@@ -256,14 +258,14 @@
 		}
 	}
 
-	function getMaxBuyNB(prixUnit){
+	function getMaxBuyNB(prixUnit,scaling){
 		j=1;
 		prix = prixUnit;
 		prevJ = j;
 		while(prix<=score){
-			j++;
 			prevJ = j;
-			prix = Math.ceil(prixUnit * ((1-Math.pow(autoScaling,j))/(1-autoScaling)));
+			j++;
+			prix = Math.ceil(prixUnit * ((1-Math.pow(scaling,j))/(1-scaling)));
 		}
 		return prevJ;
 	}
@@ -272,15 +274,15 @@
 		document.getElementById("score").innerHTML = display(score);
 		autos = document.getElementsByClassName("autoDiv");
 		for(i=0;i<autos.length;i++){
-			prix = getPrix(auto[i][0]);
-			autos[i].getElementsByTagName("button")[0].getElementsByClassName("prix")[0].innerHTML = display(prix);
+			curPrix = getPrix(auto[i][0]);
+			autos[i].getElementsByClassName("prix")[0].innerHTML = display(curPrix);
 			document.getElementById("count"+i).innerHTML = "lvl "+ display(auto[i][2]);
 			if(buyNb!="Max"){
 				autos[i].getElementsByClassName("nombre")[0].innerHTML = "x"+buyNb;
 			}else{
-				autos[i].getElementsByClassName("nombre")[0].innerHTML = "x"+ getMaxBuyNB(goalUpPrice[i]);
+				autos[i].getElementsByClassName("nombre")[0].innerHTML = "x"+ getMaxBuyNB(auto[i][0],autoScaling);
 			}
-			if(prix>score){
+			if(curPrix>score){
 				autos[i].getElementsByTagName("button")[0].classList.remove("available");
 				autos[i].getElementsByTagName("button")[0].classList.add("disable");		
 			}else{
@@ -291,14 +293,14 @@
 		}
 		upGoalDiv = document.getElementsByClassName("upGoalDiv");
 		for(i=0;i<upGoalDiv.length;i++){
-			prix = getPrix(goalUpPrice[i]);
-			upGoalDiv[i].getElementsByClassName("prix")[0].innerHTML = display(prix);
+			curPrix = getPrix(goalUpPrice[i]);
+			upGoalDiv[i].getElementsByClassName("prix")[0].innerHTML = display(curPrix);
 			if(buyNb!="Max"){
 				upGoalDiv[i].getElementsByClassName("nombre")[0].innerHTML = "x" + buyNb;
 			}else{
-				upGoalDiv[i].getElementsByClassName("nombre")[0].innerHTML = "x" + getMaxBuyNB(goalUpPrice[i]);
+				upGoalDiv[i].getElementsByClassName("nombre")[0].innerHTML = "x" + getMaxBuyNB(goalUpPrice[i],goalScaling);
 			}
-			if(prix>score){
+			if(curPrix>score){
 				upGoalDiv[i].getElementsByTagName("button")[0].classList.remove("available");
 				upGoalDiv[i].getElementsByTagName("button")[0].classList.add("disable");		
 			}else{
